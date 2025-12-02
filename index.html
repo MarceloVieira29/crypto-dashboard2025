@@ -1,301 +1,147 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <title>Painel Inteligente – Crypto & USD</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Inteligente – Crypto & USD</title>
 
-  <!-- Chart.js + plugins financeiros (candlestick) -->
-  <script src="https://cdn.jsdelivr.net/npm/luxon@3.3.0/build/global/luxon.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1.1.0/dist/chartjs-adapter-luxon.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-chart-financial@0.1.0/dist/chartjs-chart-financial.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            background: #020611;
+            font-family: Arial, sans-serif;
+            color: white;
+        }
 
-<script>
-    // REGISTRA OS PLUGINS DE VELAS
-    Chart.register(
-        ChartFinancialController,
-        CandlestickElement,
-        OhlcElement
-    );
-</script>
+        header {
+            background: #0a1224;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #0f223a;
+        }
 
-  <style>
-    :root {
-      --bg-main: #050816;
-      --bg-card: #0b1020;
-      --bg-card-soft: #111729;
-      --accent: #00d084;
-      --accent-soft: rgba(0, 208, 132, 0.13);
-      --danger: #ff4d4f;
-      --text: #f4f6fb;
-      --text-soft: #a7b1c5;
-      --border-soft: #171f35;
-      --shadow-soft: 0 18px 40px rgba(0, 0, 0, 0.65);
-      --radius-xl: 24px;
-    }
+        .container {
+            padding: 30px;
+            display: flex;
+            gap: 30px;
+        }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    }
+        .card {
+            background: #0b162b;
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px solid #0e2d4d;
+            width: 45%;
+        }
 
-    body {
-      background: radial-gradient(circle at top, #1a2744 0, #050816 40%, #02040b 100%);
-      color: var(--text);
-      min-height: 100vh;
-      padding: 16px;
-    }
+        .graph-card {
+            background: #0b162b;
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px solid #0e2d4d;
+            width: 55%;
+        }
 
-    .app-shell {
-      max-width: 1300px;
-      margin: 0 auto;
-      display: flex;
-      flex-direction: column;
-      gap: 18px;
-    }
+        .ai-box {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 10px;
+            border: 1px dashed #0b7;
+        }
 
-    .topbar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      padding: 14px 18px;
-      border-radius: var(--radius-xl);
-      background: linear-gradient(135deg, #050816 0, #09142b 40%, #050816 100%);
-      border: 1px solid rgba(120, 149, 255, 0.15);
-      box-shadow: var(--shadow-soft);
-    }
+        .up { color: #00ff99 !important; }
+        .down { color: #ff4d4d !important; }
 
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
+        #chart {
+            width: 100%;
+            height: 500px;
+        }
 
-    .brand-logo {
-      width: 40px;
-      height: 40px;
-      border-radius: 16px;
-      background: radial-gradient(circle at 30% 20%, #00ffe0, #0070ff 50%, #09142b 100%);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 700;
-      font-size: 20px;
-      color: #ffffff;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.7);
-    }
+        .select-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
 
-    .brand-text h1 {
-      font-size: 18px;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-    }
+        select {
+            padding: 8px;
+            border-radius: 8px;
+            background: #0a1a2c;
+            border: 1px solid #0e2d4d;
+            color: #00eaff;
+        }
+    </style>
 
-    .brand-text span {
-      font-size: 12px;
-      color: var(--text-soft);
-    }
+    <!-- TradingView Lightweight Charts -->
+    <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
 
-    .topbar-actions {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .chip {
-      padding: 6px 12px;
-      border-radius: 999px;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--text-soft);
-      background: rgba(5, 8, 22, 0.8);
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .chip-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--accent);
-      box-shadow: 0 0 10px var(--accent);
-    }
-
-    .btn-primary {
-      border-radius: 999px;
-      padding: 8px 16px;
-      font-size: 12px;
-      border: none;
-      cursor: pointer;
-      background: linear-gradient(135deg, #00d084, #00ffa8);
-      color: #02040b;
-      font-weight: 600;
-      box-shadow: 0 10px 25px rgba(0, 208, 132, 0.4);
-    }
-
-    .grid-main {
-      display: grid;
-      grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
-      gap: 18px;
-    }
-
-    @media (max-width: 960px) {
-      .grid-main {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    .card {
-      background: radial-gradient(circle at top left, #151e38 0, #050816 40%, #050816 100%);
-      border-radius: var(--radius-xl);
-      border: 1px solid var(--border-soft);
-      padding: 16px;
-      box-shadow: var(--shadow-soft);
-    }
-
-    .card-title {
-      font-size: 14px;
-      text-transform: uppercase;
-      color: var(--text-soft);
-      letter-spacing: 0.12em;
-    }
-
-    .card-subtitle {
-      font-size: 11px;
-      color: var(--text-soft);
-      margin-top: -2px;
-      opacity: .8;
-    }
-
-    .pill-block {
-      padding: 12px;
-      border-radius: 16px;
-      background: var(--bg-card-soft);
-      border: 1px solid rgba(255,255,255,0.08);
-      margin-top: 10px;
-    }
-
-    .pair-selector {
-      display: flex;
-      justify-content: flex-end;
-      gap: 8px;
-      margin-bottom: 8px;
-    }
-
-    .pair-selector select {
-      background: #050816;
-      border-radius: 999px;
-      border: 1px solid var(--border-soft);
-      padding: 5px 10px;
-      color: var(--text);
-      font-size: 12px;
-    }
-
-    .chart-wrapper {
-      height: 300px;
-      margin-top: 10px;
-    }
-  </style>
 </head>
-
 <body>
 
-  <div class="app-shell">
+<header>
+    <h2>🧠 PAINEL INTELIGENTE – CRYPTO & USD</h2>
+    <span style="color:#00ff99;">● Atualização automática</span>
+</header>
 
-    <header class="topbar">
-      <div class="brand">
-        <div class="brand-logo">Ξ</div>
-        <div class="brand-text">
-          <h1>PAINEL INTELIGENTE – CRYPTO & USD</h1>
-          <span>Análises de mercado em tempo real • Binance API</span>
+<div class="container">
+
+    <div class="card">
+        <h3>VISÃO GERAL</h3>
+
+        <p><b>Dólar Hoje (USD/BRL):</b></p>
+        <p id="usd-price">--</p>
+        <p id="usd-change">--</p>
+        <p id="usd-range">Faixa: --</p>
+
+        <br>
+
+        <p><b>BTCUSDT:</b> <span id="btc-info">--</span></p>
+        <p><b>ETHUSDT:</b> <span id="eth-info">--</span></p>
+        <p><b>BTCBRL:</b> <span id="btcbrl-info">--</span></p>
+
+        <div class="ai-box">
+            <b>AI – Mercado:</b>
+            <p id="usd-ai-text">Carregando...</p>
         </div>
-      </div>
+    </div>
 
-      <div class="topbar-actions">
-        <div class="chip"><span class="chip-dot"></span>Atualizando a cada 2s</div>
-        <button class="btn-primary">API Binance</button>
-      </div>
-    </header>
+    <div class="graph-card">
+        <h3>GRÁFICO DE VELAS (TradingView Style)</h3>
 
-    <main class="grid-main">
+        <div class="select-row">
+            <select id="pair-select">
+                <option value="BTCUSD">BTC / USD</option>
+                <option value="ETHUSD">ETH / USD</option>
+                <option value="BTCBRL">BTC / BRL</option>
+                <option value="ETHBRL">ETH / BRL</option>
+            </select>
 
-      <!-- VISÃO GERAL -->
-      <section class="card">
-        <div class="card-title">Visão Geral</div>
-        <div class="card-subtitle">Resumo em USD, BRL e criptos</div>
-
-        <div class="pill-block">
-          <strong id="usd-price">R$ --</strong><br>
-          USDT / BRL • var <span id="usd-change">--%</span><br>
-          Faixa: <span id="usd-range">--</span>
-        </div>
-
-        <div class="pill-block">
-          <div>BTCUSDT: <span id="btc-info"></span></div>
-          <div>ETHUSDT: <span id="eth-info"></span></div>
-          <div>BTCBRL: <span id="btcbrl-info"></span></div>
-        </div>
-
-        <div class="pill-block" style="border:1px dashed #00d084;">
-          <strong>AI – Mercado:</strong><br>
-          <span id="usd-ai-text">Carregando...</span>
-        </div>
-      </section>
-
-      <!-- GRÁFICO -->
-      <section class="card">
-        <div class="card-title">Gráfico de Velas</div>
-        <div class="card-subtitle">Binance – Tempo Real</div>
-
-        <div class="pair-selector">
-          <label>PAR:</label>
-          <select id="pair-select">
-            <option value="BTCUSD">BTC / USD</option>
-            <option value="ETHUSD">ETH / USD</option>
-            <option value="BTCBRL">BTC / BRL</option>
-            <option value="ETHBRL">ETH / BRL</option>
-          </select>
-
-          <label>TEMPO:</label>
-          <select id="tf-select">
-            <option value="1m">1M</option>
-            <option value="3m">3M</option>
-            <option value="5m" selected>5M</option>
-            <option value="15m">15M</option>
-            <option value="30m">30M</option>
-            <option value="1h">1H</option>
-            <option value="4h">4H</option>
-            <option value="1M">Mensal</option>
-          </select>
+            <select id="tf-select">
+                <option value="1m">1M</option>
+                <option value="3m">3M</option>
+                <option value="5m" selected>5M</option>
+                <option value="15m">15M</option>
+                <option value="30m">30M</option>
+                <option value="1h">1H</option>
+                <option value="4h">4H</option>
+                <option value="1d">1D</option>
+                <option value="1M">1M (Mensal)</option>
+            </select>
         </div>
 
-        <div class="chart-wrapper">
-          <canvas id="candle-chart"></canvas>
+        <div id="chart"></div>
+
+        <div class="ai-box">
+            <b id="ai-trend-title">Tendência Atual:</b>
+            <p id="ai-trend-text">Carregando...</p>
         </div>
+    </div>
 
-        <div class="pill-block" style="border:1px dashed #00d084;">
-          <strong id="ai-trend-title">Tendência Atual:</strong><br>
-          <span id="ai-trend-text">Carregando candles...</span>
-        </div>
+</div>
 
-      </section>
+<script src="script.js"></script>
 
-    </main>
-
-    <footer style="text-align:center;color:#667; margin-top:20px;">
-      Painel Crypto • 2025 • Binance API • Atualização 2s
-    </footer>
-
-  </div>
-
-  <script src="script.js"></script>
 </body>
 </html>
