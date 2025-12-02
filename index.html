@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <title>Painel Inteligente – Dólar & Criptomoedas</title>
+  <title>Painel Inteligente – Crypto & USD</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <!-- Chart.js + plugins financeiros (candlestick) -->
@@ -48,7 +48,6 @@
       gap: 18px;
     }
 
-    /* HEADER / TOP BAR */
     .topbar {
       display: flex;
       align-items: center;
@@ -133,12 +132,6 @@
       box-shadow: 0 10px 25px rgba(0, 208, 132, 0.4);
     }
 
-    .btn-primary:hover {
-      filter: brightness(1.06);
-      transform: translateY(-1px);
-    }
-
-    /* GRID PRINCIPAL */
     .grid-main {
       display: grid;
       grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
@@ -155,140 +148,37 @@
       background: radial-gradient(circle at top left, #151e38 0, #050816 40%, #050816 100%);
       border-radius: var(--radius-xl);
       border: 1px solid var(--border-soft);
-      padding: 16px 16px 14px;
+      padding: 16px;
       box-shadow: var(--shadow-soft);
-    }
-
-    .card-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      margin-bottom: 10px;
     }
 
     .card-title {
       font-size: 14px;
       text-transform: uppercase;
-      letter-spacing: 0.12em;
       color: var(--text-soft);
+      letter-spacing: 0.12em;
     }
 
     .card-subtitle {
       font-size: 11px;
       color: var(--text-soft);
-      opacity: 0.8;
-    }
-
-    .badge {
-      font-size: 11px;
-      padding: 4px 10px;
-      border-radius: 999px;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      color: var(--text-soft);
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: rgba(9, 20, 43, 0.9);
-    }
-
-    .badge span {
-      font-size: 8px;
-      text-transform: uppercase;
-      letter-spacing: 0.14em;
-    }
-
-    .badge-pill {
-      padding: 3px 8px;
-      border-radius: 999px;
-      background: var(--accent-soft);
-      color: var(--accent);
-      font-size: 11px;
-      font-weight: 600;
-    }
-
-    /* RESUMO DE MERCADO */
-    .market-summary {
-      display: grid;
-      grid-template-columns: 1.2fr 1fr;
-      gap: 12px;
-      margin-bottom: 10px;
-    }
-
-    @media (max-width: 720px) {
-      .market-summary {
-        grid-template-columns: 1fr;
-      }
+      margin-top: -2px;
+      opacity: .8;
     }
 
     .pill-block {
-      padding: 10px 12px;
+      padding: 12px;
       border-radius: 16px;
-      background: rgba(5, 8, 22, 0.9);
-      border: 1px solid rgba(255, 255, 255, 0.06);
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
+      background: var(--bg-card-soft);
+      border: 1px solid rgba(255,255,255,0.08);
+      margin-top: 10px;
     }
 
-    .pill-label {
-      font-size: 11px;
-      color: var(--text-soft);
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
-    }
-
-    .pill-main {
-      display: flex;
-      align-items: baseline;
-      justify-content: space-between;
-      gap: 8px;
-    }
-
-    .pill-main strong {
-      font-size: 20px;
-    }
-
-    .pill-main small {
-      font-size: 11px;
-      color: var(--text-soft);
-    }
-
-    .pill-change {
-      font-size: 11px;
-      font-weight: 600;
-    }
-
-    .pill-change.up {
-      color: var(--accent);
-    }
-
-    .pill-change.down {
-      color: var(--danger);
-    }
-
-    .mini-row {
-      display: flex;
-      justify-content: space-between;
-      font-size: 11px;
-      color: var(--text-soft);
-    }
-
-    /* SELETOR */
     .pair-selector {
       display: flex;
-      align-items: center;
-      gap: 8px;
       justify-content: flex-end;
-      margin-bottom: 6px;
-      flex-wrap: wrap;
-    }
-
-    .pair-selector label {
-      font-size: 11px;
-      color: var(--text-soft);
-      text-transform: uppercase;
-      letter-spacing: 0.14em;
+      gap: 8px;
+      margin-bottom: 8px;
     }
 
     .pair-selector select {
@@ -298,181 +188,83 @@
       padding: 5px 10px;
       color: var(--text);
       font-size: 12px;
-      outline: none;
     }
 
-    /* ANÁLISE INTELIGENTE */
-    .ai-box {
-      margin-top: 10px;
-      padding: 10px 12px;
-      border-radius: 18px;
-      background: linear-gradient(135deg, rgba(0, 208, 132, 0.08), rgba(0, 144, 255, 0.03));
-      border: 1px dashed rgba(0, 208, 132, 0.4);
-      font-size: 12px;
-      color: var(--text-soft);
-      display: flex;
-      gap: 10px;
-      align-items: flex-start;
-    }
-
-    .ai-icon {
-      width: 22px;
-      height: 22px;
-      border-radius: 999px;
-      background: #050816;
-      border: 1px solid rgba(0, 208, 132, 0.4);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 13px;
-      color: var(--accent);
-      flex-shrink: 0;
-    }
-
-    .ai-text strong {
-      color: var(--accent);
-    }
-
-    /* CANVAS */
     .chart-wrapper {
-      position: relative;
-      width: 100%;
-      height: 280px;
-    }
-
-    @media (max-width: 720px) {
-      .chart-wrapper {
-        height: 220px;
-      }
-    }
-
-    /* RODAPÉ */
-    .footer {
-      margin-top: 6px;
-      font-size: 11px;
-      color: var(--text-soft);
-      text-align: center;
-      opacity: 0.7;
+      height: 300px;
+      margin-top: 10px;
     }
   </style>
 </head>
+
 <body>
+
   <div class="app-shell">
-    <!-- TOPO -->
+
     <header class="topbar">
       <div class="brand">
         <div class="brand-logo">Ξ</div>
         <div class="brand-text">
           <h1>PAINEL INTELIGENTE – CRYPTO & USD</h1>
-          <span>Análises de mercado em dólar e criptomoedas (Binance API)</span>
+          <span>Análises de mercado em tempo real • Binance API</span>
         </div>
       </div>
 
       <div class="topbar-actions">
-        <div class="chip">
-          <span class="chip-dot"></span>
-          Atualização a cada 2 segundos
-        </div>
-        <button class="btn-primary">
-          API Binance
-        </button>
+        <div class="chip"><span class="chip-dot"></span>Atualizando a cada 2s</div>
+        <button class="btn-primary">API Binance</button>
       </div>
     </header>
 
     <main class="grid-main">
-      <!-- COLUNA ESQUERDA: RESUMO + DÓLAR -->
+
+      <!-- VISÃO GERAL -->
       <section class="card">
-        <div class="card-header">
-          <div>
-            <div class="card-title">VISÃO GERAL</div>
-            <div class="card-subtitle">Resumo em USD, BRL e principais criptos</div>
-          </div>
-          <div class="badge">
-            <span>STATUS</span>
-            <div class="badge-pill" id="market-status">Online</div>
-          </div>
+        <div class="card-title">Visão Geral</div>
+        <div class="card-subtitle">Resumo em USD, BRL e criptos</div>
+
+        <div class="pill-block">
+          <strong id="usd-price">R$ --</strong><br>
+          USDT / BRL • var <span id="usd-change">--%</span><br>
+          Faixa: <span id="usd-range">--</span>
         </div>
 
-        <div class="market-summary">
-          <!-- DÓLAR -->
-          <div class="pill-block" id="usd-block">
-            <div class="pill-label">DÓLAR HOJE (USDT / BRL)</div>
-            <div class="pill-main">
-              <strong id="usd-price">R$ --</strong>
-              <small>USDT / BRL (Binance)</small>
-            </div>
-            <div class="mini-row">
-              <span>Variação 24h</span>
-              <span id="usd-change" class="pill-change">--%</span>
-            </div>
-            <div class="mini-row">
-              <span>Faixa 24h</span>
-              <span id="usd-range">-- – --</span>
-            </div>
-          </div>
-
-          <!-- TOP CRIPTOS -->
-          <div class="pill-block">
-            <div class="pill-label">MERCADO CRIPTO (24H)</div>
-
-            <div class="mini-row">
-              <span>BTC • <small>BTCUSDT</small></span>
-              <span id="btc-info" class="pill-change">--</span>
-            </div>
-            <div class="mini-row">
-              <span>ETH • <small>ETHUSDT</small></span>
-              <span id="eth-info" class="pill-change">--</span>
-            </div>
-            <div class="mini-row">
-              <span>BTC • <small>BTCBRL</small></span>
-              <span id="btcbrl-info" class="pill-change">--</span>
-            </div>
-          </div>
+        <div class="pill-block">
+          <div>BTCUSDT: <span id="btc-info"></span></div>
+          <div>ETHUSDT: <span id="eth-info"></span></div>
+          <div>BTCBRL: <span id="btcbrl-info"></span></div>
         </div>
 
-        <div class="ai-box" id="dollar-ai-box">
-          <div class="ai-icon">AI</div>
-          <div class="ai-text">
-            <strong>Comentário inteligente USD/BRL + Criptos:</strong>
-            <span id="usd-ai-text">
-              Carregando análise...
-            </span>
-          </div>
+        <div class="pill-block" style="border:1px dashed #00d084;">
+          <strong>AI – Mercado:</strong><br>
+          <span id="usd-ai-text">Carregando...</span>
         </div>
       </section>
 
-      <!-- COLUNA DIREITA: GRÁFICO DE VELAS + ANÁLISE -->
+      <!-- GRÁFICO -->
       <section class="card">
-        <div class="card-header">
-          <div>
-            <div class="card-title">GRÁFICO DE VELAS • CRIPTOMOEDA</div>
-            <div class="card-subtitle">Dados em tempo quase real (Binance)</div>
-          </div>
-          <div class="badge">
-            <span>PERÍODO</span>
-            <div class="badge-pill" id="period-label">4H</div>
-          </div>
-        </div>
+        <div class="card-title">Gráfico de Velas</div>
+        <div class="card-subtitle">Binance – Tempo Real</div>
 
         <div class="pair-selector">
-          <label for="pair-select">PAR:</label>
+          <label>PAR:</label>
           <select id="pair-select">
-            <option value="BTCUSD">BTC / USD (BTCUSDT)</option>
-            <option value="ETHUSD">ETH / USD (ETHUSDT)</option>
+            <option value="BTCUSD">BTC / USD</option>
+            <option value="ETHUSD">ETH / USD</option>
             <option value="BTCBRL">BTC / BRL</option>
             <option value="ETHBRL">ETH / BRL</option>
           </select>
 
-          <label for="tf-select">TEMPO:</label>
+          <label>TEMPO:</label>
           <select id="tf-select">
             <option value="1m">1M</option>
             <option value="3m">3M</option>
-            <option value="5m">5M</option>
+            <option value="5m" selected>5M</option>
             <option value="15m">15M</option>
             <option value="30m">30M</option>
             <option value="1h">1H</option>
-            <option value="4h" selected>4H</option>
-            <option value="1M">MENSAL</option>
+            <option value="4h">4H</option>
+            <option value="1M">Mensal</option>
           </select>
         </div>
 
@@ -480,21 +272,19 @@
           <canvas id="candle-chart"></canvas>
         </div>
 
-        <div class="ai-box" id="crypto-ai-box">
-          <div class="ai-icon">AI</div>
-          <div class="ai-text">
-            <strong id="ai-trend-title">Tendência atual (BTC / USD):</strong>
-            <span id="ai-trend-text">
-              Carregando candles e análise...
-            </span>
-          </div>
+        <div class="pill-block" style="border:1px dashed #00d084;">
+          <strong id="ai-trend-title">Tendência Atual:</strong><br>
+          <span id="ai-trend-text">Carregando candles...</span>
         </div>
+
       </section>
+
     </main>
 
-    <footer class="footer">
-      Painel de Análise de Mercado • HTML + JS • Dados da Binance • Atualização a cada 2s
+    <footer style="text-align:center;color:#667; margin-top:20px;">
+      Painel Crypto • 2025 • Binance API • Atualização 2s
     </footer>
+
   </div>
 
   <script src="script.js"></script>
