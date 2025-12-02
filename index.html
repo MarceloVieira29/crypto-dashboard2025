@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Painel Inteligente – Dólar & Criptomoedas</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Chart.js + plugins financeiros (candlestick) -->
+  <script src="https://cdn.jsdelivr.net/npm/luxon@3"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-financial@3.3.0/dist/chartjs-chart-financial.min.js"></script>
+
+  <style>
+    :root {
+      --bg-main: #050816;
+      --bg-card: #0b1020;
+      --bg-card-soft: #111729;
+      --accent: #00d084;
+      --accent-soft: rgba(0, 208, 132, 0.13);
+      --danger: #ff4d4f;
+      --text: #f4f6fb;
+      --text-soft: #a7b1c5;
+      --border-soft: #171f35;
+      --shadow-soft: 0 18px 40px rgba(0, 0, 0, 0.65);
+      --radius-xl: 24px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body {
+      background: radial-gradient(circle at top, #1a2744 0, #050816 40%, #02040b 100%);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 16px;
+    }
+
+    .app-shell {
+      max-width: 1300px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    /* HEADER / TOP BAR */
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 14px 18px;
+      border-radius: var(--radius-xl);
+      background: linear-gradient(135deg, #050816 0, #09142b 40%, #050816 100%);
+      border: 1px solid rgba(120, 149, 255, 0.15);
+      box-shadow: var(--shadow-soft);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-logo {
+      width: 40px;
+      height: 40px;
+      border-radius: 16px;
+      background: radial-gradient(circle at 30% 20%, #00ffe0, #0070ff 50%, #09142b 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 20px;
+      color: #ffffff;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.7);
+    }
+
+    .brand-text h1 {
+      font-size: 18px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .brand-text span {
+      font-size: 12px;
+      color: var(--text-soft);
+    }
+
+    .topbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .chip {
+      padding: 6px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-soft);
+      background: rgba(5, 8, 22, 0.8);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .chip-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 10px var(--accent);
+    }
+
+    .btn-primary {
+      border-radius: 999px;
+      padding: 8px 16px;
+      font-size: 12px;
+      border: none;
+      cursor: pointer;
+      background: linear-gradient(135deg, #00d084, #00ffa8);
+      color: #02040b;
+      font-weight: 600;
+      box-shadow: 0 10px 25px rgba(0, 208, 132, 0.4);
+    }
+
+    .btn-primary:hover {
+      filter: brightness(1.06);
+      transform: translateY(-1px);
+    }
+
+    /* GRID PRINCIPAL */
+    .grid-main {
+      display: grid;
+      grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+      gap: 18px;
+    }
+
+    @media (max-width: 960px) {
+      .grid-main {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: radial-gradient(circle at top left, #151e38 0, #050816 40%, #050816 100%);
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--border-soft);
+      padding: 16px 16px 14px;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .card-title {
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--text-soft);
+    }
+
+    .card-subtitle {
+      font-size: 11px;
+      color: var(--text-soft);
+      opacity: 0.8;
+    }
+
+    .badge {
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: var(--text-soft);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(9, 20, 43, 0.9);
+    }
+
+    .badge span {
+      font-size: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+    }
+
+    .badge-pill {
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    /* RESUMO DE MERCADO */
+    .market-summary {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    @media (max-width: 720px) {
+      .market-summary {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .pill-block {
+      padding: 10px 12px;
+      border-radius: 16px;
+      background: rgba(5, 8, 22, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .pill-label {
+      font-size: 11px;
+      color: var(--text-soft);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+
+    .pill-main {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .pill-main strong {
+      font-size: 20px;
+    }
+
+    .pill-main small {
+      font-size: 11px;
+      color: var(--text-soft);
+    }
+
+    .pill-change {
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .pill-change.up {
+      color: var(--accent);
+    }
+
+    .pill-change.down {
+      color: var(--danger);
+    }
+
+    .mini-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--text-soft);
+    }
+
+    /* SELETOR */
+    .pair-selector {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      justify-content: flex-end;
+      margin-bottom: 6px;
+      flex-wrap: wrap;
+    }
+
+    .pair-selector label {
+      font-size: 11px;
+      color: var(--text-soft);
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+    }
+
+    .pair-selector select {
+      background: #050816;
+      border-radius: 999px;
+      border: 1px solid var(--border-soft);
+      padding: 5px 10px;
+      color: var(--text);
+      font-size: 12px;
+      outline: none;
+    }
+
+    /* ANÁLISE INTELIGENTE */
+    .ai-box {
+      margin-top: 10px;
+      padding: 10px 12px;
+      border-radius: 18px;
+      background: linear-gradient(135deg, rgba(0, 208, 132, 0.08), rgba(0, 144, 255, 0.03));
+      border: 1px dashed rgba(0, 208, 132, 0.4);
+      font-size: 12px;
+      color: var(--text-soft);
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+    }
+
+    .ai-icon {
+      width: 22px;
+      height: 22px;
+      border-radius: 999px;
+      background: #050816;
+      border: 1px solid rgba(0, 208, 132, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      color: var(--accent);
+      flex-shrink: 0;
+    }
+
+    .ai-text strong {
+      color: var(--accent);
+    }
+
+    /* CANVAS */
+    .chart-wrapper {
+      position: relative;
+      width: 100%;
+      height: 280px;
+    }
+
+    @media (max-width: 720px) {
+      .chart-wrapper {
+        height: 220px;
+      }
+    }
+
+    /* RODAPÉ */
+    .footer {
+      margin-top: 6px;
+      font-size: 11px;
+      color: var(--text-soft);
+      text-align: center;
+      opacity: 0.7;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <!-- TOPO -->
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-logo">Ξ</div>
+        <div class="brand-text">
+          <h1>PAINEL INTELIGENTE – CRYPTO & USD</h1>
+          <span>Análises de mercado em dólar e criptomoedas (Binance API)</span>
+        </div>
+      </div>
+
+      <div class="topbar-actions">
+        <div class="chip">
+          <span class="chip-dot"></span>
+          Atualização a cada 2 segundos
+        </div>
+        <button class="btn-primary">
+          API Binance
+        </button>
+      </div>
+    </header>
+
+    <main class="grid-main">
+      <!-- COLUNA ESQUERDA: RESUMO + DÓLAR -->
+      <section class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">VISÃO GERAL</div>
+            <div class="card-subtitle">Resumo em USD, BRL e principais criptos</div>
+          </div>
+          <div class="badge">
+            <span>STATUS</span>
+            <div class="badge-pill" id="market-status">Online</div>
+          </div>
+        </div>
+
+        <div class="market-summary">
+          <!-- DÓLAR -->
+          <div class="pill-block" id="usd-block">
+            <div class="pill-label">DÓLAR HOJE (USDT / BRL)</div>
+            <div class="pill-main">
+              <strong id="usd-price">R$ --</strong>
+              <small>USDT / BRL (Binance)</small>
+            </div>
+            <div class="mini-row">
+              <span>Variação 24h</span>
+              <span id="usd-change" class="pill-change">--%</span>
+            </div>
+            <div class="mini-row">
+              <span>Faixa 24h</span>
+              <span id="usd-range">-- – --</span>
+            </div>
+          </div>
+
+          <!-- TOP CRIPTOS -->
+          <div class="pill-block">
+            <div class="pill-label">MERCADO CRIPTO (24H)</div>
+
+            <div class="mini-row">
+              <span>BTC • <small>BTCUSDT</small></span>
+              <span id="btc-info" class="pill-change">--</span>
+            </div>
+            <div class="mini-row">
+              <span>ETH • <small>ETHUSDT</small></span>
+              <span id="eth-info" class="pill-change">--</span>
+            </div>
+            <div class="mini-row">
+              <span>BTC • <small>BTCBRL</small></span>
+              <span id="btcbrl-info" class="pill-change">--</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="ai-box" id="dollar-ai-box">
+          <div class="ai-icon">AI</div>
+          <div class="ai-text">
+            <strong>Comentário inteligente USD/BRL + Criptos:</strong>
+            <span id="usd-ai-text">
+              Carregando análise...
+            </span>
+          </div>
+        </div>
+      </section>
+
+      <!-- COLUNA DIREITA: GRÁFICO DE VELAS + ANÁLISE -->
+      <section class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">GRÁFICO DE VELAS • CRIPTOMOEDA</div>
+            <div class="card-subtitle">Dados em tempo quase real (Binance)</div>
+          </div>
+          <div class="badge">
+            <span>PERÍODO</span>
+            <div class="badge-pill" id="period-label">4H</div>
+          </div>
+        </div>
+
+        <div class="pair-selector">
+          <label for="pair-select">PAR:</label>
+          <select id="pair-select">
+            <option value="BTCUSD">BTC / USD (BTCUSDT)</option>
+            <option value="ETHUSD">ETH / USD (ETHUSDT)</option>
+            <option value="BTCBRL">BTC / BRL</option>
+            <option value="ETHBRL">ETH / BRL</option>
+          </select>
+
+          <label for="tf-select">TEMPO:</label>
+          <select id="tf-select">
+            <option value="1m">1M</option>
+            <option value="3m">3M</option>
+            <option value="5m">5M</option>
+            <option value="15m">15M</option>
+            <option value="30m">30M</option>
+            <option value="1h">1H</option>
+            <option value="4h" selected>4H</option>
+            <option value="1M">MENSAL</option>
+          </select>
+        </div>
+
+        <div class="chart-wrapper">
+          <canvas id="candle-chart"></canvas>
+        </div>
+
+        <div class="ai-box" id="crypto-ai-box">
+          <div class="ai-icon">AI</div>
+          <div class="ai-text">
+            <strong id="ai-trend-title">Tendência atual (BTC / USD):</strong>
+            <span id="ai-trend-text">
+              Carregando candles e análise...
+            </span>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      Painel de Análise de Mercado • HTML + JS • Dados da Binance • Atualização a cada 2s
+    </footer>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
