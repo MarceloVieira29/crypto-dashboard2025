@@ -11,8 +11,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let currentPair = "BTCUSD";
     let currentTF = "5m";
-    let chart;
-    let intervalId;
+    let chart = null;
+
 
     // ELEMENTOS DO DOM
     const pairSelect = document.getElementById("pair-select");
@@ -31,63 +31,44 @@ document.addEventListener("DOMContentLoaded", () => {
     const aiTrendText = document.getElementById("ai-trend-text");
 
 
-    // FUNÇÕES DE FORMATAÇÃO
-    function pct(v) {
-        const n = Number(v);
-        if (isNaN(n)) return "--%";
-        const s = n > 0 ? "+" : "";
-        return s + n.toFixed(2) + "%";
-    }
-
-    function brl(v) {
-        return Number(v).toLocaleString("pt-BR", {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 3
-        });
-    }
-
-    function usd(v) {
-        return Number(v).toLocaleString("en-US", {
-            minimumFractionDigits: 2
-        });
-    }
+    // FORMATADORES
+    const pct = v => (v > 0 ? "+" : "") + Number(v).toFixed(2) + "%";
+    const brl = v => Number(v).toLocaleString("pt-BR", { minimumFractionDigits: 2 });
+    const usd = v => Number(v).toLocaleString("en-US", { minimumFractionDigits: 2 });
 
     function addColorClass(el, v) {
         el.classList.remove("up", "down");
         const num = Number(v);
-        if (num > 0.01) el.classList.add("up");
-        if (num < -0.01) el.classList.add("down");
+        if (num > 0.1) el.classList.add("up");
+        if (num < -0.1) el.classList.add("down");
     }
 
 
-    // BUSCA DE TICKERS
+    // BUSCA TICKERS
     async function fetchTicker(symbol) {
-        try {
-            const res = await fetch(`${BINANCE}/api/v3/ticker/24hr?symbol=${symbol}`);
-            return await res.json();
-        } catch {
-            return null;
-        }
+        const r = await fetch(`${BINANCE}/api/v3/ticker/24hr?symbol=${symbol}`);
+        return r.json();
     }
 
 
-    // BUSCA DE CANDLES (com fallback)
+    // CANDLES (com fallback)
     async function fetchCandles(symbol, interval) {
         try {
             let url = `${BINANCE}/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=200`;
             let res = await fetch(url);
             let data = await res.json();
 
-            if (!Array.isArray(data) || data.length < 5) {
+            if (data.length < 5) {
                 url = `${BINANCE}/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=20`;
                 res = await fetch(url);
                 data = await res.json();
             }
 
-            return data.map(k => ({
-                x: new Date(k[0]).toISOString(),
-                o: +k[1], h: +k[2], l: +k[3], c: +k[4]
+            return data.map(c => ({
+                x: new Date(c[0]),
+                o: +c[1], h: +c[2], l: +c[3], c: +c[4]
             }));
+
         } catch {
             return [];
         }
@@ -99,32 +80,24 @@ document.addEventListener("DOMContentLoaded", () => {
         const ctx = document.getElementById("candle-chart").getContext("2d");
 
         if (chart) {
-            chart.data.datasets[0].data = data;
-            chart.data.datasets[0].label = label;
-            chart.update();
-            return;
+            chart.destroy();
         }
 
         chart = new Chart(ctx, {
             type: "candlestick",
-            data: {
-                datasets: [{ label, data, borderColor: "#00d084", backgroundColor: "#00d084" }]
-            },
+            data: { datasets: [{ label, data }] },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                plugins: { legend: { labels: { color: "#fff" } } },
                 scales: {
                     x: {
                         type: "time",
-                        time: {
-                            tooltipFormat: "dd/MM HH:mm",
-                            displayFormats: {
-                                minute: "HH:mm",
-                                hour: "dd/MM HH:mm",
-                                day: "dd/MM",
-                                month: "LLL yyyy"
-                            }
-                        }
+                        time: { tooltipFormat: "dd/MM HH:mm" },
+                        ticks: { color: "#ccc" }
+                    },
+                    y: {
+                        ticks: { color: "#ccc" }
                     }
                 }
             }
@@ -132,32 +105,15 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
 
-    // ANÁLISE DE TENDÊNCIA
-    function analizarTrend(c) {
-        if (!c || c.length < 4)
-            return "Aguardando mais candles...";
-
-        const last4 = c.slice(-4);
-        const closes = last4.map(x => x.c);
-        const opens = last4.map(x => x.o);
-
-        const diff = closes[3] - closes[2];
-        const pctChange = (diff / closes[2]) * 100;
-
-        const topos = closes[0] < closes[1] && closes[1] < closes[2] && closes[2] < closes[3];
-        const fundos = opens[0] < opens[1] && opens[1] < opens[2] && opens[2] < opens[3];
-
-        if (pctChange > 0.5 && topos && fundos)
-            return "Tendência de alta forte.";
-
-        if (pctChange < -0.5 && !topos && !fundos)
-            return "Tendência de baixa clara.";
-
-        if (Math.abs(pctChange) < 0.5)
-            return "Mercado lateral.";
-
-        return "Movimento indefinido.";
-    }
+    // "IA"
+    const analisar = c => {
+        if (c.length < 4) return "Aguardando dados...";
+        const last = c.slice(-4).map(x => x.c);
+        const diff = last[3] - last[2];
+        if (diff > 0) return "Tendência de alta.";
+        if (diff < 0) return "Tendência de baixa.";
+        return "Lateral.";
+    };
 
 
     // VISÃO GERAL
@@ -171,41 +127,36 @@ document.addEventListener("DOMContentLoaded", () => {
 
         usdPrice.textContent = "R$ " + brl(usdbrl.lastPrice);
         usdChange.textContent = pct(usdbrl.priceChangePercent);
-        usdRange.textContent = `R$ ${brl(usdbrl.lowPrice)} – R$ ${brl(usdbrl.highPrice)}`;
-        addColorClass(usdChange, usdbrl.priceChangePercent);
+        usdRange.textContent =
+            "R$ " + brl(usdbrl.lowPrice) + " – R$ " + brl(usdbrl.highPrice);
 
-        btcInfo.textContent = `$ ${usd(btcusdt.lastPrice)} (${pct(btcusdt.priceChangePercent)})`;
-        addColorClass(btcInfo, btcusdt.priceChangePercent);
-
-        ethInfo.textContent = `$ ${usd(ethusdt.lastPrice)} (${pct(ethusdt.priceChangePercent)})`;
-        addColorClass(ethInfo, ethusdt.priceChangePercent);
-
-        btcbrlInfo.textContent = `R$ ${brl(btcbrl.lastPrice)} (${pct(btcbrl.priceChangePercent)})`;
-        addColorClass(btcbrlInfo, btcbrl.priceChangePercent);
+        btcInfo.textContent =
+            `$ ${usd(btcusdt.lastPrice)} (${pct(btcusdt.priceChangePercent)})`;
+        ethInfo.textContent =
+            `$ ${usd(ethusdt.lastPrice)} (${pct(ethusdt.priceChangePercent)})`;
+        btcbrlInfo.textContent =
+            `R$ ${brl(btcbrl.lastPrice)} (${pct(btcbrl.priceChangePercent)})`;
 
         usdAiText.textContent =
-            `USD: ${pct(usdbrl.priceChangePercent)} | ` +
-            `BTCUSDT: ${pct(btcusdt.priceChangePercent)} | ` +
-            `ETHUSDT: ${pct(ethusdt.priceChangePercent)} | ` +
-            `BTCBRL: ${pct(btcbrl.priceChangePercent)}`;
+            `USD ${pct(usdbrl.priceChangePercent)} | BTCUSDT ${pct(btcusdt.priceChangePercent)} | ETHUSDT ${pct(ethusdt.priceChangePercent)}`;
     }
 
 
-    // ATUALIZA TUDO
+    // ATUALIZAÇÃO GERAL
     async function atualizarTudo() {
-        const pair = PAIR_MAP[currentPair];
-        const candles = await fetchCandles(pair, currentTF);
+        const symbol = PAIR_MAP[currentPair];
+        const candles = await fetchCandles(symbol, currentTF);
 
-        renderChart(candles, pair);
+        renderChart(candles, symbol);
 
-        aiTrendTitle.textContent = `Tendência atual (${pair})`;
-        aiTrendText.textContent = analizarTrend(candles);
+        aiTrendTitle.textContent = `Tendência atual (${symbol})`;
+        aiTrendText.textContent = analisar(candles);
 
         atualizarVisaoGeral();
     }
 
 
-    // EVENTOS SELECT
+    // EVENTOS
     pairSelect.addEventListener("change", () => {
         currentPair = pairSelect.value;
         atualizarTudo();
@@ -217,10 +168,10 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
 
-    // LOOP AUTOMÁTICO
-    intervalId = setInterval(atualizarTudo, 2000);
-
+    // LOOP
+    setInterval(atualizarTudo, 2000);
 
     // PRIMEIRA EXECUÇÃO
     atualizarTudo();
+
 });
